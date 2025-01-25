@@ -1,0 +1,55 @@
+Sub SplitDataIntoFiles()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim rowCount As Long
+    Dim rowsPerFile As Long
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim newWorkbook As Workbook
+    Dim newWs As Worksheet
+    Dim filePath As String
+    Dim fileName As String
+    Dim counter As Long
+
+    ' Adjust this number to set the number of rows per file
+    rowsPerFile = InputBox("Enter the number of rows per file:", "Rows Per File")
+
+    If rowsPerFile <= 0 Then
+        MsgBox "Please enter a valid number!", vbExclamation
+        Exit Sub
+    End If
+
+    Set ws = ThisWorkbook.Sheets(1) ' Set the source sheet (Sheet1)
+
+    rowCount = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row ' Total number of rows in column A
+    startRow = 1
+    counter = 1
+
+    Do While startRow <= rowCount
+        ' Create a new workbook
+        Set newWorkbook = Workbooks.Add
+        Set newWs = newWorkbook.Sheets(1)
+
+        ' Calculate the end row for the current batch
+        endRow = Application.Min(startRow + rowsPerFile - 1, rowCount)
+
+        ' Copy data to the new workbook
+        ws.Rows(startRow & ":" & endRow).Copy Destination:=newWs.Rows(1)
+
+        ' Save the new workbook
+        filePath = Application.DefaultFilePath & "\"
+        fileName = "SplitFile_" & counter & ".xlsx"
+        newWorkbook.SaveAs filePath & fileName
+
+        ' Close the new workbook
+        newWorkbook.Close SaveChanges:=False
+
+        ' Update counters
+        startRow = endRow + 1
+        counter = counter + 1
+    Loop
+
+    MsgBox "Data successfully split into " & counter - 1 & " files.", vbInformation
+End Sub
+
+
