@@ -1,0 +1,42 @@
+Sub SplitDataByRows()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim rowsPerFile As Long
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim fileCount As Integer
+    Dim newWorkbook As Workbook
+    Dim rng As Range
+    
+    ' Set the number of rows per file
+    rowsPerFile = Application.InputBox("Enter the number of rows per file:", Type:=1)
+    If rowsPerFile <= 0 Then Exit Sub
+    
+    ' Reference the active worksheet
+    Set ws = ThisWorkbook.ActiveSheet
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row ' Find the last row in column A
+    
+    startRow = 2 ' Start from the second row (assuming row 1 contains headers)
+    fileCount = 1
+    
+    Do While startRow <= lastRow
+        ' Determine the end row for the current split
+        endRow = startRow + rowsPerFile - 1
+        If endRow > lastRow Then endRow = lastRow
+        
+        ' Create a new workbook
+        Set newWorkbook = Workbooks.Add
+        ws.Rows(1).Copy Destination:=newWorkbook.Sheets(1).Rows(1) ' Copy headers
+        ws.Rows(startRow & ":" & endRow).Copy Destination:=newWorkbook.Sheets(1).Rows(2) ' Copy data
+        
+        ' Save the new workbook
+        newWorkbook.SaveAs Filename:=ThisWorkbook.Path & "\Split_File_" & fileCount & ".xlsx"
+        newWorkbook.Close SaveChanges:=False
+        
+        ' Update variables
+        startRow = endRow + 1
+        fileCount = fileCount + 1
+    Loop
+    
+    MsgBox "Data split into " & fileCount - 1 & " files.", vbInformation
+End Sub
